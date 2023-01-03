@@ -3,22 +3,25 @@ cmake_minimum_required(VERSION 3.14)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(example-mod)
+project(MistyMenu)
 
-add_library(example-mod SHARED src/main.cpp)
+add_library(MistyMenu SHARED src/main.cpp)
 
 include(cmake/CPM.cmake)
 
 CPMAddPackage("gh:matcool/mat-dash#cdc9f70")
-CPMAddPackage("gh:HJfod/cocos-headers#cbf79fc")
-CPMAddPackage("gh:HJfod/gd.h#90f2110")
+CPMAddPackage("gh:MikaKC/gd.h#main")
 CPMAddPackage("gh:TsudaKageyu/minhook#4a45552")
 
-target_compile_definitions(example-mod PRIVATE CC_DLL=)
+target_compile_definitions(MistyMenu PRIVATE CC_DLL=)
 
-target_include_directories(example-mod PRIVATE
-    ${gd.h_SOURCE_DIR}/include ${gd.h_SOURCE_DIR}
-    ${minhook_SOURCE_DIR}/include
+target_include_directories(MistyMenu PRIVATE
+	libraries/imgui-hook
+	libraries/imgui-hook/imgui
+    	${gd.h_SOURCE_DIR}/include ${gd.h_SOURCE_DIR}
+    	${minhook_SOURCE_DIR}/include
 )
 
-target_link_libraries(example-mod mat-dash cocos2d minhook)
+add_subdirectory(libraries/cocos-headers)
+add_subdirectory(libraries/imgui-hook)
+target_link_libraries(MistyMenu mat-dash cocos2d minhook imgui-hook)

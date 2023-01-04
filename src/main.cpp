@@ -14,19 +14,30 @@
 #include <matdash/console.hpp>
 #endif
 
+#define BEGIN_GUI_PANEL(TITLE) if (ImGui::Begin(TITLE, nullptr, ImGuiWindowFlags_HorizontalScrollbar))
+
 #include <gd.h>
 
 bool bShowWindow = false;
+bool bFirstTimeRunning = false;
 
 static ImFont* pFont = nullptr;
 
+void WriteProcMem(uintptr_t addr, const char* bytes, size_t size)
+{
+    WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<void*>(addr), (LPCVOID)bytes, size, NULL);
+}
+
+
 void init()
 {
+    srand(time(NULL));
+
     auto& style = ImGui::GetStyle();
-    style.WindowTitleAlign = ImVec2(0.f, 0.5f);
+    style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
     style.WindowBorderSize = 0.25f;
     style.ColorButtonPosition = ImGuiDir_Right;
-    
+
     pFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\CascadiaCode.ttf", 24.f);
     
     auto colors = style.Colors;
@@ -41,6 +52,7 @@ void init()
     colors[ImGuiCol_ResizeGrip] = ImColor(109, 94, 176, 120);
 
     colors[ImGuiCol_ResizeGripHovered] = ImColor(109, 94, 176, 175);
+    colors[ImGuiCol_TitleBgCollapsed] = ImColor(109, 94, 176, 100);
 
     colors[ImGuiCol_ResizeGripActive] = ImVec4(
         colors[ImGuiCol_ResizeGrip].x, 
@@ -59,23 +71,41 @@ void draw()
     // If the window is not hidden, show content
     if (bShowWindow)
     {
-        ImGui::SetNextWindowContentSize(ImVec2(0.75f, 0.75f));
-        
-        if (ImGui::Begin("Player Cheats", nullptr, ImGuiWindowFlags_HorizontalScrollbar))
+        static bool noclip = false;
+        static bool notouch = false;
+        static bool copylevel = false;
+
+        BEGIN_GUI_PANEL("Player Hacks")
         {
-            ImGui::SetWindowSize(ImVec2(300, 500));
+            ImGui::SetWindowSize(ImVec2(300, 500), ImGuiCond_Once);
 
             const auto avail = ImGui::GetContentRegionAvail();
 
             ImGui::BeginChild("cheats.player", ImVec2(avail.x, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 
-            MenuCheckbox::create("NoClip", "Makes the player invincible", [=](){
-                // Callback
+            MenuCheckbox::create("NoClip", "Makes the player invincible. (Bugfixed)", &noclip, [&](){
+                if (noclip) {
+                    WriteProcMem(gd::base + 0x20A23C, "\xE9\x79\x06\x00\x00", 5);
+                } else {
+                    WriteProcMem(gd::base + 0x20A23C, "\x6A\x14\x8B\xCB\xFF", 5);
+                }
             });
 
-            MenuCheckbox::create("NoTouch", "Makes the player no-touch.", [=]() {
-                
-            });
+            MenuCheckbox::create("NoTouch", "Makes the player no-touch.", &notouch, [&](){});
+
+            ImGui::EndChild();
+        }
+
+        BEGIN_GUI_PANEL("Creator Hacks")
+        {
+            ImGui::SetWindowSize(ImVec2(300, 500), ImGuiCond_Once);
+            ImGui::SetWindowPos(ImVec2(400, ImGui::GetWindowPos().y), ImGuiCond_Once);
+
+            const auto avail = ImGui::GetContentRegionAvail();
+
+            ImGui::BeginChild("cheats.creator", ImVec2(avail.x, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+
+            MenuCheckbox::create("NoClip", "Makes the player invincible", &copylevel, [&](){});
 
             ImGui::EndChild();
         }

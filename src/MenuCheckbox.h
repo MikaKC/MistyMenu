@@ -6,21 +6,18 @@ using namespace cocos2d;
 
 class MenuCheckbox
 {
-protected:
-	std::function<void()> m_pFunc;
-
 public:
 
 	MenuCheckbox();
 	virtual	~MenuCheckbox();
 
-	bool init(const char* pCheckboxName, const char* pTooltip, std::function<void()> pCallback);
+	bool init(const char* pCheckboxName, const char* pTooltip, bool* v, std::function<void()> pCallback);
 
-	static MenuCheckbox* create(const char* pCheckboxName, const char* pTooltip, std::function<void()> pCallback)
+	static MenuCheckbox* create(const char* pCheckboxName, const char* pTooltip, bool *v, std::function<void()> pCallback)
 	{
 		auto* menuCheckbox = new (std::nothrow) MenuCheckbox();
 
-		if (menuCheckbox && menuCheckbox->init(pCheckboxName, pTooltip, pCallback))
+		if (menuCheckbox && menuCheckbox->init(pCheckboxName, pTooltip, v, pCallback))
 		{
 			return menuCheckbox;
 		}

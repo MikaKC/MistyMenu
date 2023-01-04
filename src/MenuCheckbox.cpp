@@ -4,17 +4,11 @@ MenuCheckbox::MenuCheckbox() {}
 
 MenuCheckbox::~MenuCheckbox() {}
 
-bool MenuCheckbox::init(const char* pCheckboxName, const char* pTooltip, std::function<void()> pCallback)
+bool MenuCheckbox::init(const char* pCheckboxName, const char* pTooltip, bool *v, std::function<void()> pCallback)
 {
-    m_pFunc = pCallback;
-    static bool* m_bCheck = new bool;
-
-    ImGui::Checkbox(pCheckboxName, m_bCheck);
-
-    if (ImGui::IsItemClicked()) 
-    {
-        m_pFunc();
-    }
+    ImGui::Checkbox(pCheckboxName, v);
+    
+    pCallback();
 
     if (ImGui::IsItemHovered())
     {

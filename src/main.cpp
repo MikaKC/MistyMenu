@@ -1,4 +1,6 @@
 #include <matdash.hpp>
+#include <imgui-hook.hpp>
+#include "MenuCheckbox.h"
 
 #define DEBUG_BUILD
 
@@ -14,34 +16,83 @@
 
 #include <gd.h>
 
+bool bShowWindow = false;
 
-void MenuLayer_onNewgrounds(gd::MenuLayer* self, cocos2d::CCObject* sender) {
-    std::cout << "cool!" << std::endl;
-    matdash::orig<&MenuLayer_onNewgrounds>(self, sender);
+static ImFont* pFont = nullptr;
+
+void init()
+{
+    auto& style = ImGui::GetStyle();
+    style.WindowTitleAlign = ImVec2(0.f, 0.5f);
+    style.WindowBorderSize = 0.25f;
+    style.ColorButtonPosition = ImGuiDir_Right;
+    
+    pFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\CascadiaCode.ttf", 24.f);
+    
+    auto colors = style.Colors;
+
+    // Colour ranges from 0 - 1, 1st param is R, 2nd is G, 3rd is B, 4th is A
+    colors[ImGuiCol_FrameBg] = ImVec4(0.31f, 0.31f, 0.31f, 0.54f);
+    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.59f, 0.59f, 0.59f, 0.40f);
+    colors[ImGuiCol_FrameBgActive] = ImVec4(0.61f, 0.61f, 0.61f, 0.67f);
+    colors[ImGuiCol_TitleBg] = colors[ImGuiCol_TitleBgActive] = ImColor(109, 94, 176);
+    colors[ImGuiCol_CheckMark] = ImColor(142, 130, 191);
+    colors[ImGuiCol_TextSelectedBg] = ImVec4(0.71f, 0.71f, 0.71f, 0.35f);
+    colors[ImGuiCol_ResizeGrip] = ImColor(109, 94, 176, 120);
+
+    colors[ImGuiCol_ResizeGripHovered] = ImColor(109, 94, 176, 175);
+
+    colors[ImGuiCol_ResizeGripActive] = ImVec4(
+        colors[ImGuiCol_ResizeGrip].x, 
+        colors[ImGuiCol_ResizeGrip].y, 
+        colors[ImGuiCol_ResizeGrip].z,
+        colors[ImGuiCol_ResizeGrip].w + 0.4f
+    );
+
 }
 
-bool GJDropDownLayer_init(gd::GJDropDownLayer* self, const char* title, float height) {
-    return matdash::orig<&GJDropDownLayer_init>(self, "Balls in yo jawz", height * 0.5f);
-}
+void draw()
+{
+    // Add font to the stack
+    if (pFont) ImGui::PushFont(pFont);
 
-void PlayLayer_update(gd::PlayLayer* self, float dt) {
-    matdash::orig<&PlayLayer_update>(self, dt * 0.5f);
-}
+    // If the window is not hidden, show content
+    if (bShowWindow)
+    {
+        ImGui::SetNextWindowContentSize(ImVec2(0.75f, 0.75f));
+        
+        if (ImGui::Begin("Player Cheats", nullptr, ImGuiWindowFlags_HorizontalScrollbar))
+        {
+            ImGui::SetWindowSize(ImVec2(300, 500));
 
-bool MenuLayer_init(gd::MenuLayer* self) {
-    if (!matdash::orig<&MenuLayer_init>(self)) return false;
+            const auto avail = ImGui::GetContentRegionAvail();
 
-    auto* sprite = cocos2d::CCSprite::create("dialogIcon_017.png");
-    sprite->setPosition(ccp(100, 100));
-    sprite->setScale(0.5f);
-    self->addChild(sprite);
+            ImGui::BeginChild("cheats.player", ImVec2(avail.x, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 
-    auto* label = cocos2d::CCLabelBMFont::create("Hello world!", "bigFont.fnt");
-    label->setPosition(ccp(100, 150));
-    label->setAnchorPoint(ccp(0, 0.5));
-    self->addChild(label);
+            MenuCheckbox::create("NoClip", "Makes the player invincible", [=](){
+                // Callback
+            });
 
-    return true;
+            MenuCheckbox::create("NoTouch", "Makes the player no-touch.", [=]() {
+                
+            });
+
+            ImGui::EndChild();
+        }
+    }
+
+    // Show splash at the beginning
+    if (ImGui::GetTime() < 5.0) {
+        ImGui::SetNextWindowPos({ 10, 10 });
+        ImGui::Begin("mistymsg", nullptr,
+            ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings);
+        ImGui::Text("Misty Menu was loaded, press the TAB key to toggle");
+        ImGui::End();
+    }
+
+    // Remove font from the stack
+    if (pFont) ImGui::PopFont();
 }
 
 void mod_main(HMODULE) {
@@ -49,8 +100,18 @@ void mod_main(HMODULE) {
         matdash::create_console();
 #endif
 
-    matdash::add_hook<&MenuLayer_onNewgrounds>(gd::base + 0x191e90);
-    matdash::add_hook<&GJDropDownLayer_init>(gd::base + 0x113530);
-    matdash::add_hook<&PlayLayer_update>(gd::base + 0x2029c0);
-    matdash::add_hook<&MenuLayer_init>(gd::base + 0x1907B0);
+    ImGuiHook::setRenderFunction(draw);
+
+    ImGuiHook::setToggleCallback([]() {
+        bShowWindow = !bShowWindow;
+    });
+
+    ImGuiHook::setInitFunction(init);
+    MH_Initialize();
+    ImGuiHook::setupHooks([](void* target, void* hook, void** trampoline) {
+        MH_CreateHook(target, hook, trampoline);
+    });
+
+    ImGuiHook::setKeybind(VK_TAB);
+    MH_EnableHook(MH_ALL_HOOKS);
 }

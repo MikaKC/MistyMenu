@@ -10,7 +10,7 @@ std::function<void()> g_drawFunc = _stub;
 std::function<void()> g_toggleCallback = _stub;
 std::function<void()> g_initFunc = _stub;
 
-size_t g_keybind = VK_F1;
+size_t g_keybind = VK_TAB;
 
 void ImGuiHook::setRenderFunction(std::function<void()> func) {
     g_drawFunc = func;

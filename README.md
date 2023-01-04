@@ -1,4 +1,4 @@
-# Unnamed Mod Menu
+# MistyMenu
 A versatile mod menu for windows, entirely open-source.
 
 ## How to install

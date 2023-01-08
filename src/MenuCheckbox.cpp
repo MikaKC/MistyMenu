@@ -6,19 +6,12 @@ MenuCheckbox::~MenuCheckbox() {}
 
 bool MenuCheckbox::init(const char* pCheckboxName, const char* pTooltip, bool *v, std::function<void()> pCallback)
 {
-    if (ImGui::Checkbox(pCheckboxName, v))
-    {
-        pCallback();
+    if (!ImGui::Checkbox(pCheckboxName, v)) return false;
+    
+    pCallback();
 
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::BeginTooltip();
-            ImGui::SetTooltip(pTooltip);
-            ImGui::EndTooltip();
-        }
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip(pTooltip);
 
-        return true;
-    }
-
-    return false;
+    return true;
 }

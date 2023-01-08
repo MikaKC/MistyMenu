@@ -4,7 +4,7 @@
 
 using namespace cocos2d;
 
-class MenuCheckbox
+class MenuCheckbox : public cocos2d::CCObject
 {
 public:
 
@@ -19,6 +19,7 @@ public:
 
 		if (menuCheckbox && menuCheckbox->init(pCheckboxName, pTooltip, v, pCallback))
 		{
+			menuCheckbox->autorelease();
 			return menuCheckbox;
 		}
 

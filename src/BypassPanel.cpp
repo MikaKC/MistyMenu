@@ -1,51 +1,50 @@
-#include "PlayerPanel.h"
+#include "BypassPanel.h"
 #include <fstream>
 
-json jPlayerData;
-std::vector<bool> m_bPlayerBools;
+json jBypassData;
+std::vector<bool> m_bBypassBools;
 
-static PlayerPanel* gPlayerPanel = NULL;
+static BypassPanel* gBypassPanel = NULL;
 
-PlayerPanel* PlayerPanel::sharedObject()
+BypassPanel* BypassPanel::sharedObject()
 {
-	if (gPlayerPanel == NULL)
+	if (gBypassPanel == NULL)
 	{
-		gPlayerPanel = new (std::nothrow) PlayerPanel();
+		gBypassPanel = new (std::nothrow) BypassPanel();
 	}
 
-	return gPlayerPanel;
+	return gBypassPanel;
 }
 
-void PlayerPanel::LoadJSON()
+void BypassPanel::LoadJSON()
 {
-	std::ifstream stream("MistyMenu\\hacks\\player.json");
+	std::ifstream stream("MistyMenu\\hacks\\bypass.json");
 
 	std::string dat;
 	std::getline(stream, dat, '\0');
 
 	stream.close();
 
-	jPlayerData = json::parse(dat)["hacks"];
+	jBypassData = json::parse(dat)["hacks"];
 
-	for (int i = 0; i < static_cast<int>(jPlayerData.size()); i++)
+	for (int i = 0; i < static_cast<int>(jBypassData.size()); i++)
 	{
-		m_bPlayerBools.push_back(false);
+		m_bBypassBools.push_back(false);
 	}
 }
 
-void PlayerPanel::LoadButtons()
+void BypassPanel::LoadButtons()
 {
-	for (int i = 0; i < static_cast<int>(jPlayerData.size()); i++)
+	for (int i = 0; i < static_cast<int>(jBypassData.size()); i++)
 	{
-		json currentHack = jPlayerData.at(i);
+		json currentHack = jBypassData.at(i);
 
 		json opcodes = currentHack["opcodes"];
 
-		bool current = m_bPlayerBools[i];
+		bool current = m_bBypassBools[i];
 
-		if(ImGui::Checkbox(std::string(currentHack["name"]).c_str(), &current))
-		{
-			m_bPlayerBools[i] = current;
+		if(ImGui::Checkbox(std::string(currentHack["name"]).c_str(), &current)) { 
+			m_bBypassBools[i] = current;
 			for (int j = 0; j < opcodes.size(); j++)
 			{
 				json opcode = opcodes.at(j);
@@ -83,28 +82,27 @@ void PlayerPanel::LoadButtons()
 				Utils::WriteProcMem(currentBase + addr, bytes);
 			}
 		}
-
 		if (ImGui::IsItemHovered()) {
 			ImGui::SetTooltip(std::string(currentHack["desc"]).c_str());
 		}
 	}
 }
 
-bool PlayerPanel::init(const char* title) 
+bool BypassPanel::init(const char* title)
 {
-	m_pPlayerTitle = std::string(title);
+	m_pBypassTitle = std::string(title);
 	this->LoadJSON();
 
 	return true;
 }
 
-void PlayerPanel::draw()
+void BypassPanel::draw()
 {
-	BasePanel::draw(m_pPlayerTitle.c_str(), 375, 675);
+	BasePanel::draw(m_pBypassTitle.c_str(), 375, 675);
+	ImGui::SetWindowPos(ImVec2(780, 10), ImGuiCond_Once);
 
-	ImGui::SetWindowPos(ImVec2(10, 10), ImGuiCond_Once);
-
-    PANEL_CREATE_CONTENT("cheats.player");
+	PANEL_CREATE_CONTENT("cheats.bypass");
+	
 
 	this->LoadButtons();
 

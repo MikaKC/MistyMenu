@@ -2,13 +2,13 @@
 
 #include "BasePanel.h"
 
-class PlayerPanel : public BasePanel
+class GlobalPanel : public BasePanel
 {
 protected:
-	std::string m_pPlayerTitle;
+	std::string m_pGlobalTitle;
 public:
 
-	static PlayerPanel* sharedObject();
+	static GlobalPanel* sharedObject();
 
 	void LoadJSON() override;
 	virtual bool init(const char* title);

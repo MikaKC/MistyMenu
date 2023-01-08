@@ -1,51 +1,51 @@
-#include "PlayerPanel.h"
+#include "GlobalPanel.h"
 #include <fstream>
 
-json jPlayerData;
-std::vector<bool> m_bPlayerBools;
+json jGlobalData;
+std::vector<bool> m_bGlobalBools;
 
-static PlayerPanel* gPlayerPanel = NULL;
+static GlobalPanel* gCreatorPanel = NULL;
 
-PlayerPanel* PlayerPanel::sharedObject()
+GlobalPanel* GlobalPanel::sharedObject()
 {
-	if (gPlayerPanel == NULL)
+	if (gCreatorPanel == NULL)
 	{
-		gPlayerPanel = new (std::nothrow) PlayerPanel();
+		gCreatorPanel = new (std::nothrow) GlobalPanel();
 	}
 
-	return gPlayerPanel;
+	return gCreatorPanel;
 }
 
-void PlayerPanel::LoadJSON()
+void GlobalPanel::LoadJSON()
 {
-	std::ifstream stream("MistyMenu\\hacks\\player.json");
+	std::ifstream stream("MistyMenu\\hacks\\global.json");
 
 	std::string dat;
 	std::getline(stream, dat, '\0');
 
 	stream.close();
 
-	jPlayerData = json::parse(dat)["hacks"];
+	jGlobalData = json::parse(dat)["hacks"];
 
-	for (int i = 0; i < static_cast<int>(jPlayerData.size()); i++)
+	for (int i = 0; i < static_cast<int>(jGlobalData.size()); i++)
 	{
-		m_bPlayerBools.push_back(false);
+		m_bGlobalBools.push_back(false);
 	}
 }
 
-void PlayerPanel::LoadButtons()
+void GlobalPanel::LoadButtons()
 {
-	for (int i = 0; i < static_cast<int>(jPlayerData.size()); i++)
+	for (int i = 0; i < static_cast<int>(jGlobalData.size()); i++)
 	{
-		json currentHack = jPlayerData.at(i);
+		json currentHack = jGlobalData.at(i);
 
 		json opcodes = currentHack["opcodes"];
 
-		bool current = m_bPlayerBools[i];
+		bool current = m_bGlobalBools[i];
 
 		if(ImGui::Checkbox(std::string(currentHack["name"]).c_str(), &current))
 		{
-			m_bPlayerBools[i] = current;
+			m_bGlobalBools[i] = current;
 			for (int j = 0; j < opcodes.size(); j++)
 			{
 				json opcode = opcodes.at(j);
@@ -83,28 +83,26 @@ void PlayerPanel::LoadButtons()
 				Utils::WriteProcMem(currentBase + addr, bytes);
 			}
 		}
-
 		if (ImGui::IsItemHovered()) {
 			ImGui::SetTooltip(std::string(currentHack["desc"]).c_str());
 		}
 	}
 }
 
-bool PlayerPanel::init(const char* title) 
+bool GlobalPanel::init(const char* title)
 {
-	m_pPlayerTitle = std::string(title);
+	m_pGlobalTitle = std::string(title);
 	this->LoadJSON();
 
 	return true;
 }
 
-void PlayerPanel::draw()
+void GlobalPanel::draw()
 {
-	BasePanel::draw(m_pPlayerTitle.c_str(), 375, 675);
+	BasePanel::draw(m_pGlobalTitle.c_str(), 375, 650);
+	ImGui::SetWindowPos(ImVec2(1165, 10), ImGuiCond_Once);
 
-	ImGui::SetWindowPos(ImVec2(10, 10), ImGuiCond_Once);
-
-    PANEL_CREATE_CONTENT("cheats.player");
+	PANEL_CREATE_CONTENT("cheats.global");
 
 	this->LoadButtons();
 

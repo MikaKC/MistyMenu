@@ -4,6 +4,7 @@
 #include <gd.h>
 #include "MenuCheckbox.h"
 #include "Json.hpp"
+#include "Utils.h"
 
 using json = nlohmann::json;
 
@@ -15,5 +16,6 @@ class BasePanel : public cocos2d::CCObject
 public:
 	virtual void LoadJSON() = 0;
 	virtual void LoadButtons() = 0;
-	virtual bool init(const char* title, int w = 300, int h = 500);
+	virtual void draw(const char* title, int w = 300, int h = 500);
+	virtual bool init() { return true; };
 };
